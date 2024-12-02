@@ -69,7 +69,7 @@ module servant_spi_top
    wire spi_ss;
    wire spi_mosi;
 
-   wire [31:0] ram_addr;
+   wire [17:0] ram_addr;
    wire [7:0] ram_wdata;
    wire ram_we;
    wire ram_re;
@@ -98,7 +98,7 @@ module servant_spi_top
       .i_wb_timer_rdt (wb_timer_rdt));
 
   servant_spi_master_if
-    #(.ADDRESS_WIDTH(32),
+    #(.ADDRESS_WIDTH(24),
       .CLOCK_DIVIDER(2),
       .CLOCK_POLARITY(0))
   spi_master_if
@@ -106,7 +106,7 @@ module servant_spi_top
       .clock(wb_clk),
       .reset_n(wb_rst),
       .wr_data(wb_mem_dat),
-      .address(wb_mem_adr),
+      .address(wb_mem_adr[23:2]),
       .wb_sel(wb_mem_sel),
       .wb_we(wb_mem_we),
       .wb_cyc(wb_mem_stb),
@@ -118,7 +118,9 @@ module servant_spi_top
       .spi_ss(spi_ss),
       .spi_mosi(spi_mosi));
 
-  servant_spi_slave_if spi_slave_if
+  servant_spi_slave_if
+   #(.ADDRESS_WIDTH(18))
+  spi_slave_if
     (//spi interface
       .spi_sck(spi_sck),
       .spi_cs(spi_ss),
@@ -134,7 +136,7 @@ module servant_spi_top
       .sDqIn(ram_rdata));
 
    
-   servant_ram
+   servant_spi_ram
      #(.memfile (memfile),
        .depth (memsize),
        .RESET_STRATEGY (reset_strategy))

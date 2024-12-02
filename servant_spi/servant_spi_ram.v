@@ -2,7 +2,7 @@
 module servant_spi_ram
   #(//Memory parameters
     parameter depth = 65536,
-    parameter aw    = $clog2(depth)+2,
+    parameter aw    = $clog2(depth),
     parameter RESET_STRATEGY = "",
     parameter memfile = "")
    (input wire 		i_clk,
@@ -10,9 +10,9 @@ module servant_spi_ram
     input wire [7:0] 	i_wdata,
     input wire 		i_we,
     input wire 		i_re,
-    output wire [7:0] 	o_rdata);
+    output reg [7:0] 	o_rdata);
 
-   reg [31:0] 		mem [0:depth-1] /* verilator public */;
+   reg [31:0] 		mem [0:depth/4-1] /* verilator public */;
 
    always @* begin
       case (i_addr[1:0])

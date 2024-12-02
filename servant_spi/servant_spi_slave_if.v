@@ -1,21 +1,19 @@
 `default_nettype none
 module servant_spi_slave_if
-( 
-    //spi interface
+  #(parameter ADDRESS_WIDTH = 18)
+   (//spi interface
     input spi_sck,
     input spi_cs,
     input spi_mosi,
     output  spi_miso, 
-    //ram interface  
- 
-    output [15:0] sAddress ,
+    //ram interface
+    output [17:0] sAddress ,
     output sCSn,
     output sOEn,
     output sWRn,
     output sDqDir,
     output [7:0] sDqOut,
-    input [7:0] sDqIn
-);
+    input [7:0] sDqIn);
     
     reg [7:0] rINBUF;
     reg [7:0] rOUTBUF;
@@ -31,9 +29,9 @@ module servant_spi_slave_if
  
     reg [7:0] rCmd;
     reg [7:0] rState;
-    reg [15:0] rAddress;
+    reg [ADDRESS_WIDTH-1:0] rAddress;
     reg rReadFlag1, rReadFlag2; 
-    assign sAddress = rReadFlag1 ? {rAddress[15:8], rINBUF} : rAddress;
+    assign sAddress = rReadFlag1 ? {rAddress[ADDRESS_WIDTH-1:8], rINBUF} : rAddress;
       
     wire sRamOE;
     assign sRamOE = sCnt8 & (rReadFlag1 | rReadFlag2);
@@ -100,15 +98,17 @@ module servant_spi_slave_if
                     if( rWriteFlag1 == 'b0 )begin
                         case( rCnt[5:3])      
                         3'b010: begin    // CHECK: Needed to use 18-bit addresses
-                            rAddress[17:16] <= rINBUF[1:0];   
+                            rAddress[ADDRESS_WIDTH-1:16] <= rINBUF[1:0];   
                         end
                         3'b011: begin 
-                            rAddress[17:8] <= {rAddress[17:16], rINBUF};   
+                            rAddress[ADDRESS_WIDTH-1:8] <= {rAddress[ADDRESS_WIDTH-1:16], rINBUF};   
                         end
                         3'b100: begin
-                            rAddress[17:0] <= {rAddress[17:8], rINBUF};  
+                            rAddress[ADDRESS_WIDTH-1:0] <= {rAddress[ADDRESS_WIDTH-1:8], rINBUF};  
                             rWriteFlag1 <= 1'b1;
                         end 
+                        default: begin
+                        end
                         endcase  
                     end
                     else begin
@@ -121,19 +121,21 @@ module servant_spi_slave_if
                     if( rReadFlag2 == 'b0 )begin
                         case( rCnt[5:3])     
                         3'b010: begin   // CHECK: Needed to use 18-bit addresses
-									rAddress[17:16] <= rINBUF[1:0];
+									rAddress[ADDRESS_WIDTH-1:16] <= rINBUF[1:0];
 									end 
                         3'b011: begin 
-									rAddress[17:8] <= {rAddress[17:16], rINBUF}; 
+									rAddress[ADDRESS_WIDTH-1:8] <= {rAddress[ADDRESS_WIDTH-1:16], rINBUF}; 
 									rOUTBUF <= 8'h00;    // QUESTION: Is this needed?
 									rReadFlag1 <= 'b1; 
 									end
                         3'b100: begin
-									rAddress[17:0] <= {rAddress[17:8], rINBUF} + 1'b1;  // COMMENT: Since this negedge the address is already reed
+									rAddress[ADDRESS_WIDTH-1:0] <= {rAddress[ADDRESS_WIDTH-1:8], rINBUF} + 1'b1;  // COMMENT: Since this negedge the address is already reed
 									rOUTBUF <= sDqIn;
 									rReadFlag2 <= 'b1;  
 									rReadFlag1<= 'b0; 
-                        end 
+                        end  
+                        default: begin
+                        end
                         endcase  
                     end 
                     else begin
@@ -145,7 +147,7 @@ module servant_spi_slave_if
                          
                     end
                 4'h5:begin
-								rOUTBUF <= rState;  
+						rOUTBUF <= rState;  
                     end
                 4'h6:begin
                      
@@ -160,7 +162,9 @@ module servant_spi_slave_if
                         end  
                         3'b100: begin // CHECK: Changed to Product ID (2nd Byte) of FRAM
                             rOUTBUF <= 8'h03;
-                        end 
+                        end  
+                        default: begin
+                        end
                         endcase  
                     end
                  default:begin
