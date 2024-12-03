@@ -99,12 +99,11 @@ module servant_spi_top
 
   servant_spi_master_if
     #(.ADDRESS_WIDTH(24),
-      .CLOCK_DIVIDER(2),
-      .CLOCK_POLARITY(0))
+      .CLOCK_DIVIDER(2))
   spi_master_if
     (// Wishbone Slave Interface
       .clock(wb_clk),
-      .reset_n(wb_rst),
+      .reset(wb_rst),
       .wr_data(wb_mem_dat),
       .address(wb_mem_adr[23:2]),
       .wb_sel(wb_mem_sel),
