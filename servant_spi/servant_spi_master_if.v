@@ -155,10 +155,10 @@ always @(negedge serial_clk) begin
 		case (state)
 			TRANSMIT_COMMAND: begin
 			  if (wb_we) begin
-					spi_out_reg = CMD_WRITE_DATA;
+					spi_out_reg <= CMD_WRITE_DATA;
 			  end
 			  else begin
-					spi_out_reg = CMD_READ_DATA;
+					spi_out_reg <= CMD_READ_DATA;
 			  end
 			end
 			TRANSMIT_ADDRESS1:
@@ -189,7 +189,7 @@ always @(posedge serial_clk) begin
 	if (bit_cnt == 0) begin
 		case (state)
 			TRANSMIT_COMMAND: begin
-				byte_offset = address_reg[1:0];
+				byte_offset <= address_reg[1:0];
 			end
 			TRANSMIT_DATA: begin
 				byte_offset <= byte_offset + 1;
