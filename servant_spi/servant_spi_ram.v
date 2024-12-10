@@ -14,15 +14,6 @@ module servant_spi_ram
 
    reg [31:0] 		mem [0:depth/4-1] /* verilator public */;
 
-   always @* begin
-      case (i_addr[1:0])
-          2'b00: o_rdata = mem[i_addr[aw-1:2]][7:0];
-          2'b01: o_rdata = mem[i_addr[aw-1:2]][15:8];
-          2'b10: o_rdata = mem[i_addr[aw-1:2]][23:16];
-          2'b11: o_rdata = mem[i_addr[aw-1:2]][31:24];
-      endcase
-   end
-
    //assign o_rdata = mem[i_addr[aw-1:2]][(8*i_addr[1:0])+:8];
 
    always @(negedge i_clk) begin
@@ -35,6 +26,7 @@ module servant_spi_ram
         endcase
         //mem[i_addr[aw-1:2]][(8*i_addr[1:0]+:8]) <= i_wdata;
       end
+		o_rdata <= mem[i_addr[aw-1:2]][(8*i_addr[1:0])+:8];
    end
 
    initial

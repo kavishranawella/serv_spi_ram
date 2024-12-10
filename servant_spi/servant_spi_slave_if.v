@@ -2,18 +2,18 @@
 module servant_spi_slave_if
   #(parameter ADDRESS_WIDTH = 18)
    (//spi interface
-    input spi_sck,
-    input spi_cs,
-    input spi_mosi,
-    output  spi_miso, 
+    input wire spi_sck,
+    input wire spi_cs,
+    input wire spi_mosi,
+    output  wire spi_miso, 
     //ram interface
-    output [17:0] sAddress ,
-    output sCSn,
-    output sOEn,
-    output sWRn,
-    output sDqDir,
-    output [7:0] sDqOut,
-    input [7:0] sDqIn);
+    output wire [17:0] sAddress ,
+    output wire sCSn,
+    output wire sOEn,
+    output wire sWRn,
+    output wire sDqDir,
+    output wire [7:0] sDqOut,
+    input wire [7:0] sDqIn);
     
     reg [7:0] rINBUF;
     reg [7:0] rOUTBUF;
