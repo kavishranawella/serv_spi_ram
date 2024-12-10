@@ -10,23 +10,39 @@ module servant_spi_ram
     input wire [7:0] 	i_wdata,
     input wire 		i_we,
     input wire 		i_re,
-    output reg [7:0] 	o_rdata);
+    output wire [7:0] 	o_rdata);
 
    reg [31:0] 		mem [0:depth/4-1] /* verilator public */;
 
-   //assign o_rdata = mem[i_addr[aw-1:2]][(8*i_addr[1:0])+:8];
+	 wire [aw-3:0] addr_hi;
+   wire [1:0] addr_lo;
+	
+	 reg [31:0]   data_int_1, data_int_2;
+	 reg [aw-3:0] addr_int;
+	 reg          we_int;
+	
+	 assign addr_hi = i_addr[aw-1:2];
+   assign addr_lo = i_addr[1:0];
+	
+	 assign o_rdata = data_int_1[(addr_lo * 8) +: 8];
 
    always @(negedge i_clk) begin
-      if (!i_we) begin
-        case (i_addr[1:0])
-          2'b00: mem[i_addr[aw-1:2]][7:0]   <= i_wdata;
-          2'b01: mem[i_addr[aw-1:2]][15:8]  <= i_wdata;
-          2'b10: mem[i_addr[aw-1:2]][23:16] <= i_wdata;
-          2'b11: mem[i_addr[aw-1:2]][31:24] <= i_wdata;
-        endcase
-        //mem[i_addr[aw-1:2]][(8*i_addr[1:0]+:8]) <= i_wdata;
-      end
-		o_rdata <= mem[i_addr[aw-1:2]][(8*i_addr[1:0])+:8];
+		 data_int_1 <= mem[addr_hi];
+		 addr_int   <= addr_hi;
+		 we_int <= i_we;
+   end
+	
+	 always @(posedge i_clk) begin
+     if (!we_int) begin
+			 mem[addr_int] <= data_int_2;
+		 end
+   end
+	
+	 always @(negedge we_int) begin
+		 data_int_2 = data_int_1;
+		 if(!i_we) begin
+       data_int_2[(addr_lo * 8) +: 8] = i_wdata;
+		 end
    end
 
    initial
