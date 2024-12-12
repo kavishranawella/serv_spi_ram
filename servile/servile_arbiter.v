@@ -37,7 +37,7 @@ module servile_arbiter
 
    assign o_wb_mem_adr = i_wb_cpu_ibus_stb ? i_wb_cpu_ibus_adr : i_wb_cpu_dbus_adr;
    assign o_wb_mem_dat = i_wb_cpu_dbus_dat;
-   assign o_wb_mem_sel = i_wb_cpu_dbus_sel;
+   assign o_wb_mem_sel = i_wb_cpu_ibus_stb ? 4'hF : i_wb_cpu_dbus_sel;
    assign o_wb_mem_we  = i_wb_cpu_dbus_we & !i_wb_cpu_ibus_stb;
    assign o_wb_mem_stb = i_wb_cpu_ibus_stb | i_wb_cpu_dbus_stb;
 
