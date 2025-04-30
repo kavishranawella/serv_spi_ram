@@ -230,7 +230,6 @@ always @(negedge clock) begin
 	end
 end
 
-
 always @(posedge serial_clk) begin
 	if (bit_cnt == 3'h0) begin
 		case (state)
@@ -248,7 +247,6 @@ always @(posedge serial_clk) begin
 		endcase
 	end
 end
-
 
 always @(posedge serial_clk) begin
 	if (state == READ_DATA) begin
@@ -269,39 +267,13 @@ always @(posedge clock or posedge reset) begin
     end
 end
 
-
-always @(state) begin
+always @(*) begin
 	case (state)
 		IDLE:
 		begin
         	spi_ss = 1'b1;
         	wb_ack = 1'b0;
 			int_ack = 1'b0;
-		end
-		TRANSMIT_COMMAND:
-		begin
-        	spi_ss = 1'b0;
-        	wb_ack = 1'b0;
-			int_ack = 1'b0;
-		  	wr_data_reg = wr_data;
-//        wr_data_reg[3] = wr_data[31:24];  //TODO: Check and remove this
-//        wr_data_reg[2] = wr_data[23:16];
-//        wr_data_reg[1] = wr_data[15:8];
-//        wr_data_reg[0] = wr_data[7:0];
-        	address_reg    = {address, sel_dec_start};
-			last_byte = sel_dec_last;
-			if (wb_we) begin
-				cmd_reg[0] = 1'b1;
-			end
-			else begin
-				cmd_reg[0] = 1'b0;
-			end
-			if (wb_sel == 4'h0 | (~configed & wb_we)) begin
-				cmd_reg[1] = 1'b1;
-			end
-			else begin
-				cmd_reg[1] = 1'b0;
-			end
 		end
 		FINISH:
 		begin
@@ -312,12 +284,45 @@ always @(state) begin
 		TEMP_STATE:
 		begin
         	spi_ss = 1'b1;
+        	wb_ack = 1'b0;
 			int_ack = 1'b1;
 		end
 		default:
 		begin
+        	spi_ss = 1'b0;
+        	wb_ack = 1'b0;
+			int_ack = 1'b0;
 		end
 	endcase
+end
+
+always @(negedge clock) begin
+	if (serial_clk_negedge && (bit_cnt == 1) && (state == TRANSMIT_COMMAND)) begin
+		wr_data_reg = wr_data;
+//        wr_data_reg[3] = wr_data[31:24];  //TODO: Check and remove this
+//        wr_data_reg[2] = wr_data[23:16];
+//        wr_data_reg[1] = wr_data[15:8];
+//        wr_data_reg[0] = wr_data[7:0];
+		address_reg    = {address, sel_dec_start};
+		last_byte = sel_dec_last;
+		if (wb_we) begin
+			cmd_reg[0] = 1'b1;
+		end
+		else begin
+			cmd_reg[0] = 1'b0;
+		end
+		if (wb_sel == 4'h0 | (~configed & wb_we)) begin
+			cmd_reg[1] = 1'b1;
+		end
+		else begin
+			cmd_reg[1] = 1'b0;
+		end
+	end else begin
+		wr_data_reg <= wr_data_reg;
+		address_reg <= address_reg;
+		last_byte <= last_byte;
+		cmd_reg <= cmd_reg;
+	end
 end
 
 endmodule
